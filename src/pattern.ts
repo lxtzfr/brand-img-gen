@@ -35,3 +35,54 @@ export function scatterPattern(w: number, h: number, count: number, size: number
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">${icons.join('')}</svg>`
 }
+
+export interface DiagonalPatternOptions {
+  /** Height of each tile in px — width is derived from `viewBoxW`/`viewBoxH`. Defaults to 22% of the canvas's shorter side. */
+  tileSize?: number
+  /** Spacing between tile centers, along both axes. Defaults to 40% of the canvas's shorter side. */
+  gap?: number
+  opacity?: number
+  rotation?: number
+}
+
+/**
+ * A staggered, evenly-spaced repeat of one mark/icon across the whole
+ * canvas — the "Fall Guys background" look: same tile, same size, same
+ * rotation, alternating rows offset by half a gap, transparent background.
+ * Unlike `scatterPattern` (randomly placed/sized/rotated stroke icons),
+ * this is for a single already-colored, filled tile repeated on a
+ * deterministic grid — pass any SVG markup (e.g. `<polygon>`/`<path
+ * fill="...">`) already at its own intrinsic viewBox size.
+ */
+export function diagonalPattern(
+  w: number, h: number,
+  tileMarkup: string, viewBoxW: number, viewBoxH: number,
+  options: DiagonalPatternOptions = {},
+): string {
+  const minDim = Math.min(w, h)
+  const {
+    tileSize = minDim * 0.22,
+    gap      = minDim * 0.4,
+    opacity  = 0.14,
+    rotation = -18,
+  } = options
+  const scale = tileSize / viewBoxH
+
+  // Overscan on every side so staggered/rotated tiles still cover the corners.
+  const pad = gap * 1.5
+  const tiles: string[] = []
+  let row = 0
+  for (let y = -pad; y < h + pad; y += gap) {
+    const xOffset = row % 2 === 0 ? 0 : gap / 2
+    for (let x = -pad; x < w + pad; x += gap) {
+      const transform =
+        `translate(${(x + xOffset).toFixed(1)},${y.toFixed(1)}) ` +
+        `rotate(${rotation}) scale(${scale.toFixed(4)}) ` +
+        `translate(${-viewBoxW / 2},${-viewBoxH / 2})`
+      tiles.push(`<g transform="${transform}" opacity="${opacity}">${tileMarkup}</g>`)
+    }
+    row++
+  }
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">${tiles.join('')}</svg>`
+}

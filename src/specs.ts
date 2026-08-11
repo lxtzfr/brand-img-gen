@@ -7,6 +7,7 @@ export interface AssetSpec {
 /** Standard dimensions for common web/social assets. Consumers pick which ones they need. */
 export const SPECS = {
   OG:               { name: 'og',               width: 1200, height: 630 },
+  GENERIC_COVER:    { name: 'cover',             width: 1200, height: 400 },
   TWITTER_BANNER:   { name: 'twitter-banner',   width: 1500, height: 500 },
   LINKEDIN_BANNER:  { name: 'linkedin-banner',  width: 720,  height: 121 },
   DISCORD_BANNER:   { name: 'discord-banner',   width: 680,  height: 240 },

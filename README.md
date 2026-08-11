@@ -44,9 +44,9 @@ pnpm generate
 src/               core engine — generic, no brand knowledge
   vnode.ts          div/span/img — a tiny satori vnode builder
   fonts.ts          loadFont() — load any font file for satori
-  pattern.ts        scatterPattern() — scattered-icon background, given any icon paths
+  pattern.ts        scatterPattern()/diagonalPattern() — repeating icon backgrounds
   layout.ts         bannerFrame/logoFrame/headerRow — recommended centering, gap & padding
-  render.ts         renderVnode/renderBanner/buildFavicon — the actual PNG/ICO pipeline
+  render.ts         renderVnode/renderBanner/renderLayers/buildFavicon — the PNG/ICO pipeline
   specs.ts          SPECS — standard dimensions per asset type (OG, banners, favicon…)
   index.ts          public exports
 
@@ -75,6 +75,7 @@ Nothing in `src/` imports from `examples/` — the dependency only goes one way.
 | `SPECS.*`          | dimensions | typical use                        |
 |---------------------|------------|-------------------------------------|
 | `OG`                | 1200×630   | Open Graph / link preview image     |
+| `GENERIC_COVER`     | 1200×400   | Generic wide cover image, no fixed platform |
 | `TWITTER_BANNER`    | 1500×500   | Twitter/X profile banner            |
 | `LINKEDIN_BANNER`   | 720×121    | LinkedIn company page banner        |
 | `DISCORD_BANNER`    | 680×240    | Discord server banner               |
@@ -101,9 +102,10 @@ Need a size that's not listed? `SPECS` is just a plain object — pass your own
 Everything under `examples/` is yours to reshape — there's no fixed interface a
 "personalization" has to implement:
 
-- **Pattern** — `pattern.ts` isn't required. Build your own from `scatterPattern`, compose
-  a different background entirely with `sharp`, or skip the pattern layer and pass
-  `undefined` to `renderBanner`.
+- **Pattern** — `pattern.ts` isn't required. Build your own from `scatterPattern` (randomly
+  placed/sized/rotated stroke icons) or `diagonalPattern` (one filled tile repeated on a
+  staggered grid — the "Fall Guys background" look), compose a different background
+  entirely with `sharp`, or skip the pattern layer and pass `undefined` to `renderBanner`.
 - **Icon** — `icon.ts` can wrap any icon library (Lucide, Heroicons, a custom SVG export,
   a logo file) — the core only ever deals in `<img src="data:image/svg+xml...">` or plain
   vnodes, never a specific icon set.
@@ -119,7 +121,7 @@ import {
   // primitives
   div, span, img, loadFont,
   // rendering
-  renderVnode, renderBanner, buildFavicon,
+  renderVnode, renderBanner, renderLayers, buildFavicon,
   // layout
   bannerFrame, logoFrame, headerRow, recommendedGap, recommendedPadding,
   // specs
@@ -130,9 +132,21 @@ import {
 - `SPECS` — see [Available specs](#available-specs) above.
 - `renderVnode(vnode, w, h, fonts)` → PNG buffer.
 - `renderBanner(w, h, content, fonts, background, patternSvg?)` → PNG buffer, with an
-  optional pattern layer composited underneath.
-- `buildFavicon(svg, sizes)` → `{ ico, pngs }`.
-- `scatterPattern(w, h, count, size, iconPaths)` → SVG string of a scattered-icon
-  background, given any 24×24-viewBox icon markup.
+  optional pattern layer composited underneath. `background` is a flat `RgbColor`.
+- `renderLayers(w, h, layers, fonts, underColor?)` → PNG buffer, compositing an arbitrary
+  bottom-to-top stack of layers (`{ kind: 'vnode' | 'svg' | 'png', ... }`). More flexible
+  than `renderBanner`: the background can itself be a styled vnode (gradient, non-rectangular
+  shape…) instead of a flat color, and there's no fixed "background + pattern + content"
+  shape — pass as many or as few layers as the asset needs (e.g. a pattern-only banner with
+  no content layer on top).
+- `buildFavicon(svg, sizes)` → `{ ico, pngs }`. Sizes above 256 come back as PNGs but are
+  left out of the `.ico` itself (its directory format can't address them), so you can
+  request e.g. `[16, 32, 192, 512]` in one call.
+- `scatterPattern(w, h, count, size, iconPaths)` → SVG string of a randomly scattered-icon
+  background, given any 24×24-viewBox icon markup (rendered as strokes).
+- `diagonalPattern(w, h, tileMarkup, viewBoxW, viewBoxH, options?)` → SVG string of one
+  already-colored/filled tile repeated on a staggered diagonal grid (same size, same
+  rotation, alternating row offset) — the "Fall Guys background" look, as opposed to
+  `scatterPattern`'s randomized confetti placement.
 - `bannerFrame` / `logoFrame` / `headerRow` — layout scaffolding with sensible defaults
   (see `src/layout.ts`), all overridable.
