@@ -64,6 +64,7 @@ export interface LogoFrameOptions {
 /** A square icon-on-solid-background frame (app icon / square logo), icon centered at a recommended fill ratio. */
 export function logoFrame(size: number, icon: VNode, options: LogoFrameOptions): VNode {
   const { background, iconRatio = RECOMMENDED_LOGO_ICON_RATIO, style = {} } = options
+  const iconBoxSize = Math.round(size * iconRatio)
   return div({
     width:          size,
     height:         size,
@@ -72,7 +73,7 @@ export function logoFrame(size: number, icon: VNode, options: LogoFrameOptions):
     alignItems:     'center',
     justifyContent: 'center',
     ...style,
-  }, icon)
+  }, div({ width: iconBoxSize, height: iconBoxSize, display: 'flex', alignItems: 'center', justifyContent: 'center' }, icon))
 }
 
 /** A horizontal row (e.g. icon box + brand text), gap defaults to a fraction of the row's own children scale — pass explicitly for fine control. */
