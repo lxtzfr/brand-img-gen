@@ -84,6 +84,7 @@ Nothing in `src/` imports from `examples/` — the dependency only goes one way.
 | `FAVICON_32`        | 32×32      | favicon (standard)                  |
 | `APPLE_TOUCH_ICON`  | 180×180    | iOS home-screen icon                |
 | `LOGO_SQUARE`       | 512×512    | square app icon / logo              |
+| `BUSINESS_CARD`     | 1004×650   | 85×55mm (ISO/EU) print business card, 300dpi, no bleed |
 
 Need a size that's not listed? `SPECS` is just a plain object — pass your own
 `{ width, height }` anywhere a spec is expected, or add to your own copy.

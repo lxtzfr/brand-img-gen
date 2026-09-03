@@ -16,4 +16,6 @@ export const SPECS = {
   FAVICON_32:       { name: 'favicon-32',       width: 32,   height: 32  },
   APPLE_TOUCH_ICON: { name: 'apple-touch-icon', width: 180,  height: 180 },
   LOGO_SQUARE:      { name: 'logo',             width: 512,  height: 512 },
+  /** 85×55mm (ISO/EU standard), at 300dpi print resolution. No bleed — trim size only. */
+  BUSINESS_CARD:    { name: 'business-card',    width: 1004, height: 650 },
 } as const satisfies Record<string, AssetSpec>
